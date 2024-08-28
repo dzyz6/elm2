@@ -11,7 +11,7 @@
 - 将数据库初始化脚本 elm.sql 导入到数据库中，并设置好访问的用户和权限。
 
 ## 3. 后端项目 elmboot 部署运行 
-- 首先需要下载安装项目管理工具 [Maven](https://maven.apache.org/ "Maven官网") 。 
+- 首先需要下载安装 [JDK](https://www.oracle.com/cn/java/technologies/downloads/ "JavaSE官网") 和 项目管理工具 [Maven](https://maven.apache.org/ "Maven官网") 。 
 - 修改 `src/main/resources/application.properties` 文件，填写连接数据库需要的正确的地址、用户名和密码。
 - 运行打包命令 `mvn package` ，生成 `target/elmboot-0.0.1-SNAPSHOT.jar` 。这是”胖jar包“，一个jar包就包含后端项目运行所需的全部文件，可以拷贝到任何一台仅安装了 JVM 的机器上运行。
 - 运行命令 `java -jar elmboot-0.0.1-SNAPSHOT.jar` ，启动后端项目，保持字符窗口不被关闭即可提供服务。
@@ -21,7 +21,7 @@
 - 建议使用 [Postman](https://www.postman.com/ "Postman官网")、 [Apifox](https://apifox.com/ "Apifox官网") 之类的工具，模拟 HTTP 请求，对后端进行测试。
 
 ## 5. 前端项目 elmclient 部署运行
-- 下载安装 [Node.js](https://nodejs.org "Node.js官网")，会安装node及npm命令。
+- 下载安装 [Node.js](https://nodejs.org "Node.js官网")，会安装 node 及 npm 命令。
 - 修改 npm 源为国内源（国外源太慢）: `npm config set registry https://registry.npmmirror.com`
 - 安装 npm 的国内替代品 cnpm ：`npm install -g cnpm --registry=https://registry.npmmirror.com`
 - 安装依赖包，在 elmclient 目录下执行 `cnpm install` ，此过程会生成 node_modules 目录并将依赖包放在此目录下。后期如果出现依赖问题，可以将此目录删除后重新执行本命令。
