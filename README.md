@@ -11,12 +11,19 @@
 - 将数据库初始化脚本 elm.sql 导入到数据库中，并设置好访问的用户和权限。
 
 ## 3. 后端项目 elmboot 部署运行 
-- 首先需要下载安装项目管理工具 maven [ https://maven.apache.org/ ]
-- 修改 src/main/resources/application.properties 文件，填写连接数据库需要的正确的地址、用户名和密码。
-- 运行打包命令 `mvn package` ，生成 target/elmboot-0.0.1-SNAPSHOT.jar 。这是”胖jar包“，一个jar包就包含后端项目运行所需的全部文件，可以拷贝到任何一台仅安装了JDK的机器上运行。
+- 首先需要下载安装项目管理工具 [Maven](https://maven.apache.org/ "Maven官网") 。 
+- 修改 `src/main/resources/application.properties` 文件，填写连接数据库需要的正确的地址、用户名和密码。
+- 运行打包命令 `mvn package` ，生成 `target/elmboot-0.0.1-SNAPSHOT.jar` 。这是”胖jar包“，一个jar包就包含后端项目运行所需的全部文件，可以拷贝到任何一台仅安装了 JVM 的机器上运行。
 - 运行命令 `java -jar elmboot-0.0.1-SNAPSHOT.jar` ，启动后端项目，保持字符窗口不被关闭即可提供服务。
-- 在浏览器上输入 `http://localhost:8080/elm/UserController/getUserByIdByPass?userId=11111111111&password=123`，如果看到该用户的详细信息，说明后端项目运行正常。（多么不安全的服务）
+- 在浏览器上输入 [http://localhost:8080/elm/UserController/getUserByIdByPass?userId=11111111111&password=123](http://localhost:8080/elm/UserController/getUserByIdByPass?userId=11111111111&password=123 )，如果看到该用户的详细信息，说明后端项目运行正常。（多么不安全的服务）
 
 ## 4. 测试后端项目 
-- 建议使用 Postman [ https://www.postman.com/ ]、 Apifox [ https://apifox.com/ ] 之类的工具，模拟 HTTP 请求，对后端进行测试。
+- 建议使用 [Postman](https://www.postman.com/ "Postman官网")、 [Apifox](https://apifox.com/ "Apifox官网") 之类的工具，模拟 HTTP 请求，对后端进行测试。
 
+## 5. 前端项目 elmclient 部署运行
+- 下载安装 [Node.js](https://nodejs.org "Node.js官网")，会安装node及npm命令。
+- 修改 npm 源为国内源（国外源太慢）: `npm config set registry https://registry.npmmirror.com`
+- 安装 npm 的国内替代品 cnpm ：`npm install -g cnpm --registry=https://registry.npmmirror.com`
+- 安装依赖包，在 elmclient 目录下执行 `cnpm install` ，此过程会生成 node_modules 目录并将依赖包放在此目录下。后期如果出现依赖问题，可以将此目录删除后重新执行本命令。
+- 提供测试用的前端服务（仅限开发机）： `npm run serve` ，编译通过后会提示前端服务运行在 localhost 的 8081 端口 ，在浏览器中输入 [ http://localhost:8081/ ](http://localhost:8081/ )
+- 生成部署版本：`npm run build`，编译后的结果放在 dist 目录下，此目录即可部署到正式的 Web Server (如 Nginx) 上。
