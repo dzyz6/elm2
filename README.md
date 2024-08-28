@@ -29,6 +29,6 @@
 - 生成部署版本：`npm run build`，编译后的结果放在 dist 目录下，此目录即可部署到正式的 Web Server (如 Nginx) 上。
 
 ## 6. 前后端部署在同一个服务中的方法
-- 先编译前端项目，将前端项目编译生成的 dist 目录，放在后端项目的 src/main/resources/ 目录下。注意需要在前端代码中设置好后端服务的地址。
+- 先编译前端项目，将前端项目编译生成的 dist 目录，放在后端项目的 src/main/resources/ 目录下， 将 dist 改名为 static 。注意需要在前端代码中设置好后端服务的地址。
 - 再编译后端项目，生成胖jar包。
 - 运行胖jar包，这时访问 [ http://localhost:8080/ ](http://localhost:8080/ ) 就是前端页面了，而 [ http://localhost:8080/elm ](http://localhost:8080/elm )为后端服务API。这样做还可以避免出现跨域访问的问题。
