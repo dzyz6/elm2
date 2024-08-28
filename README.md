@@ -27,3 +27,8 @@
 - 安装依赖包，在 elmclient 目录下执行 `cnpm install` ，此过程会生成 node_modules 目录并将依赖包放在此目录下。后期如果出现依赖问题，可以将此目录删除后重新执行本命令。
 - 提供测试用的前端服务： `npm run serve` ，编译通过后会提示前端服务运行在 localhost 的 8081 端口 ，在浏览器中输入 [ http://localhost:8081/ ](http://localhost:8081/ )
 - 生成部署版本：`npm run build`，编译后的结果放在 dist 目录下，此目录即可部署到正式的 Web Server (如 Nginx) 上。
+
+## 6. 前后端部署在同一个服务中的方法
+- 先编译前端项目，将前端项目编译生成的 dist 目录，放在后端项目的 src/main/resources/ 目录下。注意需要在前端代码中设置好后端服务的地址。
+- 再编译后端项目，生成胖jar包。
+- 运行胖jar包，这时访问 [ http://localhost:8080/ ](http://localhost:8080/ ) 就是前端页面了，而 [ http://localhost:8080/elm ](http://localhost:8080/elm )为后端服务API。这样做还可以避免出现跨域访问的问题。
