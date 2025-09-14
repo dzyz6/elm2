@@ -1,10 +1,23 @@
+## 项目介绍
+
+- elm-v2 项目仅包含后端代码，包括与认证相关的全部代码和与业务相关的接口代码和业务对象代码。
+
+- 需要补充后端各层代码，方可通过测试。
+
 ## 项目启动
 
 - 当前项目仅依赖 jdk(version>=17) 即可正常运行。
 - Build : mvn package
 - Run: java -jar target/myapp-1.0.jar （windows上将/换成\）
+
+## 数据库相关
+
 - 当前数据库使用内置h2，无需额外安装数据库。数据库控制台可通过下列地址访问（项目启动后）
   - http://localhost:8080/h2-console/
+
+- 可以通过修改 pom.xml 和 application.properties ，换成 PostgreSQL 或 MySQL 。
+
+- ORM 采用 spring jpa，可以换成 MyBatis 。
 
 ## 接口及测试
 
