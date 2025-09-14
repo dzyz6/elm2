@@ -12,13 +12,13 @@
   - http://localhost:8080/swagger-ui/index.html
 - 在apifox上的公开项目访问地址
   - https://tjusep.apifox.cn/
-- 测试接口（使用apifox cli）
+- 测试接口（方法一：使用apifox cli）
   - 安装node （可从 https://nodejs.org 下载安装）
   - 安装apifox （ npm install -g apifox-cli ，如网络不畅，可先装cnpm，再 cnpm install -g apifox-cli ）
   - 修改测试文件”测试正常创建订单流程.apifox-cli.json“，将其中的 localhost 换为你自己的IP地址（用ipconfig/ifconfig可查）
   - 启动项目，并执行：apifox run 测试正常创建订单流程.apifox-cli.json
 
-- 测试接口（登录apifox协作帐号）
+- 测试接口（方法二：登录apifox协作帐号）
   - 下载apifox桌面版（可从 https://apifox.com 下载）
   - 使用手机号 18522610428 密码 Tju1895se 登录
   - 在个人空间中找到 ”天津大学软件工程实践项目“ ，在”自动化测试“中可以完成”测试正常创建订单流程“
