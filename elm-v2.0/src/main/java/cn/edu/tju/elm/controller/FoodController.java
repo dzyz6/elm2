@@ -5,6 +5,8 @@ import cn.edu.tju.core.model.HttpResult;
 //import cn.edu.tju.elb.service.BusinessService;
 //import cn.edu.tju.elb.service.FoodService;
 import cn.edu.tju.core.security.service.UserService;
+import cn.edu.tju.elm.service.BusinessService;
+import cn.edu.tju.elm.service.FoodService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +21,11 @@ public class FoodController {
     @Autowired
     private UserService userService;
 
-//    @Autowired
-//    private FoodService foodService;
-//
-//    @Autowired
-//    private BusinessService businessService;
+   @Autowired
+   private FoodService foodService;
+
+   @Autowired
+   private BusinessService businessService;
 
     @GetMapping("/{id}")
     @Operation(summary = "返回查询到的一条商品记录", method = "GET")
@@ -39,6 +41,6 @@ public class FoodController {
 
     @PostMapping("")
     public HttpResult<Food> addFood(@RequestBody Food food){
-        return null;
+        return foodService.addFood(food);
     }
 }

@@ -4,6 +4,7 @@ import cn.edu.tju.elm.model.Business;
 import cn.edu.tju.core.model.HttpResult;
 //import cn.edu.tju.elb.service.BusinessService;
 import cn.edu.tju.core.security.service.UserService;
+import cn.edu.tju.elm.service.BusinessService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,8 +19,8 @@ public class BusinessController {
     @Autowired
     private UserService userService;
 
-//    @Autowired
-//    BusinessService businessService;
+   @Autowired
+   BusinessService businessService;
 
     @GetMapping("")
     public HttpResult<List<Business>> getBusinesses(){
@@ -29,13 +30,15 @@ public class BusinessController {
     @PostMapping("")
     @PreAuthorize("hasAuthority('ADMIN')")
     public HttpResult<Business> addBusiness(@RequestBody Business business){
-        return null;
+        return businessService.addBusiness(business);
     }
 
     @GetMapping("/{id}")
     public HttpResult<Business> getBusiness(@PathVariable("id") Long id){
         return null;
     }
+
+    
 
     @PutMapping("/{id}")
     public HttpResult<Business> updateBusiness(@PathVariable("id") Long id, @RequestBody Business business){

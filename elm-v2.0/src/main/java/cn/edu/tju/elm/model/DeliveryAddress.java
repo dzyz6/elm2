@@ -5,8 +5,10 @@ import cn.edu.tju.core.model.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name="DELIVERY_ADDRESS")
 public class DeliveryAddress extends BaseEntity {
 
     private String contactName;

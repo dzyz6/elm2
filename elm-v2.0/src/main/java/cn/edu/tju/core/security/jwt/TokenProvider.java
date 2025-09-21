@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.stream.Collectors;
 
+
 @Component
 public class TokenProvider implements InitializingBean {
 
@@ -89,15 +90,18 @@ public class TokenProvider implements InitializingBean {
    }
 
    public boolean validateToken(String authToken) {
-//      if (StringUtils.hasText(authToken) && authToken.startsWith("Bearer ")) {
-//         authToken =  authToken.substring(7);
-//      }
+      System.out.println(authToken);
+      System.out.println("//////////////////////////////////////////////////////////////");
+     if (StringUtils.hasText(authToken) && authToken.startsWith("Bearer ")) {
+        authToken =  authToken.substring(7);
+     }
       try {
          Jwts.parser().setSigningKey(key).parseClaimsJws(authToken);
          return true;
       } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
          log.info("Invalid JWT signature.");
          log.trace("Invalid JWT signature trace: {}", e);
+
       } catch (ExpiredJwtException e) {
          log.info("Expired JWT token.");
          log.trace("Expired JWT token trace: {}", e);

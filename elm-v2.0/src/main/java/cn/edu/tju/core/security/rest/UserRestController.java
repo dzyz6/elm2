@@ -90,6 +90,10 @@ public class UserRestController {
       person.setDeleted(false);
       person.setPassword(SecurityUtils.BCryptPasswordEncode("password"));
       person.setActivated(true);
+      person.setEmail("string");
+      person.setPhone("string");
+      person.setGender("string");
+      person.setPhoto("string");
       return personRepository.save(person);
    }
 }

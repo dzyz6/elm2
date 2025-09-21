@@ -4,6 +4,7 @@ import cn.edu.tju.core.model.HttpResult;
 import cn.edu.tju.elm.model.Order;
 //import cn.edu.tju.elb.service.OrderService;
 import cn.edu.tju.core.security.service.UserService;
+import cn.edu.tju.elm.service.OrderService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +18,8 @@ public class OrderController {
     @Autowired
     private UserService userService;
 
-//    @Autowired
-//    private OrderService ordersService;
+   @Autowired
+   private OrderService ordersService;
 
     @PostMapping(value = "")
     public HttpResult<Order> addOrders(@RequestBody Order order) throws Exception{

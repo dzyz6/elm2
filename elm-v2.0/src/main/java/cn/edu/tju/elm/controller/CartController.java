@@ -4,6 +4,7 @@ import cn.edu.tju.elm.model.Cart;
 //import cn.edu.tju.elb.service.CartItemService;
 import cn.edu.tju.core.model.HttpResult;
 import cn.edu.tju.core.security.service.UserService;
+import cn.edu.tju.elm.service.CartItemService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,8 +19,8 @@ public class CartController {
     @Autowired
     private UserService userService;
 
-//    @Autowired
-//    private CartItemService cartItemService;
+    @Autowired
+    private CartItemService cartItemService;
 
     @PostMapping("/carts")
     public HttpResult<Cart>  addCartItem(@RequestBody Cart cart){
