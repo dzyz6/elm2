@@ -1,6 +1,7 @@
 package cn.edu.tju.elm.controller;
 
 import cn.edu.tju.core.model.ResultCodeEnum;
+import cn.edu.tju.core.model.User;
 import cn.edu.tju.elm.model.Food;
 import cn.edu.tju.core.model.HttpResult;
 //import cn.edu.tju.elb.service.BusinessService;
@@ -11,11 +12,13 @@ import cn.edu.tju.elm.service.BusinessService;
 import cn.edu.tju.elm.service.FoodService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -74,7 +77,16 @@ public class FoodController {
         return foodService.addFood(food);
     }
 
-//    @PutMapping("/{id}")
+    @PatchMapping("/{id}")
+    public HttpResult<Food> updateFood(
+            @PathVariable Long id,
+            @RequestBody @Valid Food updateFood, // 直接使用实体类接收请求
+            @AuthenticationPrincipal User user) { // 获取当前认证用户
+
+        Food updatedFood = foodService.updateFood(id, updateFood, user);
+        return HttpResult.success(updatedFood);
+    }
+//    @PatchMapping("/{id}")
 //    @PreAuthorize("isAuthenticated()")
 //    public ResponseEntity<Void> updateFood(
 //            @PathVariable Long id,

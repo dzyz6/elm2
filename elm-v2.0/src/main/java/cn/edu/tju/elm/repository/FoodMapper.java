@@ -24,7 +24,7 @@ public interface FoodMapper extends JpaRepository<Food,Long> {
 
     List<Food> deleteById(long id);
 
-//    // 自定义更新方法（动态更新非空字段）
+    // 自定义更新方法（动态更新非空字段）
 //    @Modifying
 //    @Query("UPDATE Food f SET " +
 //            "f.foodName = COALESCE(:name, f.foodName), " +

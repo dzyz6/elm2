@@ -2,10 +2,9 @@ package cn.edu.tju.elm.service;
 
 import cn.edu.tju.core.model.HttpResult;
 import cn.edu.tju.core.model.User;
-import cn.edu.tju.core.security.SecurityUtils;
 import cn.edu.tju.core.security.service.UserService;
 import cn.edu.tju.elm.model.Business;
-import cn.edu.tju.elm.repository.BusinessMappper;
+import cn.edu.tju.elm.repository.BusinessMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,7 +15,7 @@ import java.time.LocalDateTime;
 public class BusinessService {
 
     @Autowired
-    BusinessMappper businessMappper;
+    BusinessMapper businessMappper;
 
     private final UserService userService;
 

@@ -7,8 +7,11 @@ import cn.edu.tju.core.security.UserModelDetailsService;
 import cn.edu.tju.core.security.repository.PersonRepository;
 import cn.edu.tju.core.security.repository.UserRepository;
 import cn.edu.tju.core.security.service.UserService;
+import cn.edu.tju.elm.model.Business;
 import cn.edu.tju.elm.model.Food;
+import cn.edu.tju.elm.repository.BusinessMapper;
 import cn.edu.tju.elm.repository.FoodMapper;
+import jakarta.persistence.EntityNotFoundException;
 import org.aspectj.bridge.IMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
@@ -76,6 +79,52 @@ public class FoodService {
 
     }
 
+    @Transactional
+    public Food updateFood(Long foodId, Food updateFood, User currentUser) {
+        // 1. 验证商品存在性
+        Food existingFood = foodMapper.findById(foodId)
+                .orElseThrow(() -> new EntityNotFoundException("商品不存在"));
+
+        // 2. 权限校验：只有所属商家可以修改
+        validateBusinessOwnership(existingFood.getBusiness().getId(), currentUser);
+
+        // 3. 更新可修改字段（排除createTime、business等敏感字段）
+        if (updateFood.getFoodName() != null) {
+            existingFood.setFoodName(updateFood.getFoodName());
+        }
+        if (updateFood.getFoodExplain() != null) {
+            existingFood.setFoodExplain(updateFood.getFoodExplain());
+        }
+        if (updateFood.getFoodImg() != null) {
+            existingFood.setFoodImg(updateFood.getFoodImg());
+        }
+        if (updateFood.getFoodPrice() != null) {
+            existingFood.setFoodPrice(updateFood.getFoodPrice());
+        }
+        if (updateFood.getRemarks() != null) {
+            existingFood.setRemarks(updateFood.getRemarks());
+        }
+
+        // 4. 自动更新updateTime
+        existingFood.setUpdateTime(LocalDateTime.now());
+
+        // 5. 保存并返回更新后的实体
+        return foodMapper.save(existingFood);
+    }
+
+    /**
+     * 验证用户是否拥有商家权限
+     */
+    private void validateBusinessOwnership(Long businessId, User user) {
+        // 查询商家所有者
+        Business business = BusinessMapper.findById(businessId)
+                .orElseThrow(() -> new EntityNotFoundException("商家不存在"));
+
+        // 验证当前用户是否是商家所有者
+        if (!business.getBusinessOwner().getId().equals(user.getId())) {
+            throw new AccessDeniedException("无权修改他人商品");
+        }
+    }
 //    @Transactional
 //    public void updateFood(Long id, FoodUpdateDTO dto) {
 //        // 1. 权限验证

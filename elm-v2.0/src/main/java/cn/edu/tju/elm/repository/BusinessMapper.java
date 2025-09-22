@@ -5,6 +5,8 @@ import cn.edu.tju.elm.model.Business;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
-public interface BusinessMappper extends JpaRepository<Business,Long> {
+public interface BusinessMapper extends JpaRepository<Business,Long> {
 }
