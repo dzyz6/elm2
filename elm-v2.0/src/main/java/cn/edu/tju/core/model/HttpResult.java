@@ -90,6 +90,14 @@ public class HttpResult <T> implements Serializable {
         return new HttpResult<T>(resultCode,message);
     }
 
+    // 新增方法（接收字符串）
+    public static <T> HttpResult<T> failure(String code, String message) {
+        HttpResult<T> result = new HttpResult<>();
+        result.setCode(code); // 直接使用字符串错误码
+        result.setMessage(message);
+        return result;
+    }
+
     public Boolean getSuccess() {
         return success;
     }

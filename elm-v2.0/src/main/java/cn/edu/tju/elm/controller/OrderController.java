@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/api/orders")
 @Tag(name = "管理订单", description = "对订单进行增删改查")
@@ -21,18 +22,32 @@ public class OrderController {
    @Autowired
    private OrderService ordersService;
 
-    @PostMapping(value = "")
-    public HttpResult<Order> addOrders(@RequestBody Order order) throws Exception{
-        return null;
+    @PostMapping
+    public HttpResult<Order> addOrders(@RequestBody Order order) throws Exception {
+        return ordersService.addOrders(order);
     }
 
     @GetMapping("/{id}")
-    public HttpResult getOrderById(@PathVariable Long id) throws Exception{
-        return null;
+    public HttpResult<Order> getOrderById(@PathVariable Long id) throws Exception {
+        return ordersService.getOrderById(id);
     }
 
-    @GetMapping("")
-    public List<Order> listOrdersByUserId(@RequestParam Long userId) throws Exception{
-        return null;
+    @GetMapping
+    public HttpResult<List<Order>> listOrdersByUserId(@RequestParam Long userId) throws Exception {
+        return ordersService.listOrdersByUserId(userId);
     }
+//    @PostMapping(value = "")
+//    public HttpResult<Order> addOrders(@RequestBody Order order) throws Exception{
+//        return null;
+//    }
+//
+//    @GetMapping("/{id}")
+//    public HttpResult getOrderById(@PathVariable Long id) throws Exception{
+//        return null;
+//    }
+//
+//    @GetMapping("")
+//    public List<Order> listOrdersByUserId(@RequestParam Long userId) throws Exception{
+//        return null;
+//    }
 }

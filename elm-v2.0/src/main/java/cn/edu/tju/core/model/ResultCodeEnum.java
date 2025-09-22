@@ -4,6 +4,8 @@ public enum ResultCodeEnum {
     /*** 通用部分 100 - 599***/
     // 成功请求
     SUCCESS("OK", "successful"),
+    // 请求参数错误
+    BAD_REQUEST("400", "Bad Request"), // 新增BAD_REQUEST
     // 资源未找到
     NOT_FOUND("NOT_FOUND", "not found"),
     // 服务器错误
