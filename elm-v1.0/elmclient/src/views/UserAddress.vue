@@ -8,14 +8,14 @@
 
 		<!-- 地址列表部分 -->
 		<ul class="addresslist">
-			<li v-for="item in deliveryAddressArr">
+			<li v-for="item in deliveryAddressArr.filter(item => !item.deleted)">
 				<div class="addresslist-left" @click="setDeliveryAddress(item)">
-					<h3>{{item.contactName}}{{item.contactSex | sexFilter}} {{item.contactTel}}</h3>
+					<h3>{{item.contactName}} {{item.contactTel}}</h3>
 					<p>{{item.address}}</p>
 				</div>
 				<div class="addresslist-right">
-					<i class="fa fa-edit" @click="editUserAddress(item.daId)"></i>
-					<i class="fa fa-remove" @click="removeUserAddress(item.daId)"></i>
+					<i class="fa fa-edit" @click="editUserAddress(item.id)"></i>
+					<i class="fa fa-remove" @click="removeUserAddress(item.id)"></i>
 				</div>
 			</li>
 		</ul>
@@ -59,11 +59,10 @@
 		methods:{
 			listDeliveryAddressByUserId(){
 				//查询送货地址
-				this.$axios.post('DeliveryAddressController/listDeliveryAddressByUserId',this.$qs.stringify({
-					userId:this.user.userId
-				})).then(response=>{
-					this.deliveryAddressArr = response.data;
+				this.$axios.get('api/getaddresses').then(response=>{
+					this.deliveryAddressArr = response.data.data;
 				}).catch(error=>{
+
 					console.error(error);
 				});
 			},
@@ -83,10 +82,10 @@
 					return;
 				}
 				
-				this.$axios.post('DeliveryAddressController/removeDeliveryAddress',this.$qs.stringify({
-					daId:daId
-				})).then(response=>{
-					if(response.data>0){
+				this.$axios.post('api/removeaddress',{
+					"id":daId
+				}).then(response=>{
+					if(response.data.success===true){
 						let deliveryAddress = this.$getLocalStorage(this.user.userId);
 						if(deliveryAddress!=null&&deliveryAddress.daId==daId){
 							this.$removeLocalStorage(this.user.userId);
@@ -96,6 +95,7 @@
 						alert('删除地址失败！');
 					}
 				}).catch(error=>{
+          alert(error)
 					console.error(error);
 				});
 			}

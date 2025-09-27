@@ -40,6 +40,7 @@ public class FoodController {
     @GetMapping("/{id}")
     @Operation(summary = "返回查询到的一条商品记录", method = "GET")
     public HttpResult<Food> getFoodById(@PathVariable Long id){
+
         // 1. 参数校验
         if (id == null || id <= 0) {
             return HttpResult.failure(ResultCodeEnum.BAD_REQUEST, "ID参数无效");
@@ -66,14 +67,12 @@ public class FoodController {
     }
 
     @GetMapping("")
-    public HttpResult<List<Food>> getAllFoods(@RequestParam(name = "business", required = false) Long businessId,
-                                              @RequestParam(name = "order", required = false) Long orderId){
-        return foodService.getAllFoods(businessId, orderId);
+    public HttpResult<List<Food>> getAllFoods(@RequestParam(name = "business", required = false) Long businessId){
+        return foodService.getAllFoods(businessId);
     }
 
     @PostMapping("")
     public HttpResult<Food> addFood(@RequestBody Food food) {
-
         return foodService.addFood(food);
     }
 

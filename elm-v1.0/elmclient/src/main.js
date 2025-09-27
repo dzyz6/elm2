@@ -18,7 +18,7 @@ import {
 Vue.config.productionTip = false
 
 //设置axios的基础url部分
-axios.defaults.baseURL = 'http://localhost:8080/elm/';
+axios.defaults.baseURL = 'http://localhost:8080/';
 //将axios挂载到vue实例上，使用时就可以 this.$axios 这样使用了
 Vue.prototype.$axios = axios;
 
@@ -31,6 +31,22 @@ Vue.prototype.$removeSessionStorage = removeSessionStorage;
 Vue.prototype.$setLocalStorage = setLocalStorage;
 Vue.prototype.$getLocalStorage = getLocalStorage;
 Vue.prototype.$removeLocalStorage = removeLocalStorage;
+
+// 添加请求拦截器：自动附加 Authorization 头
+axios.interceptors.request.use(function(config){
+	try{
+		const token = getLocalStorage('token');
+		if(token){
+			config.headers = config.headers || {};
+			config.headers['Authorization'] = 'Bearer ' + token;
+		}
+	}catch(e){
+		// 忽略读取 token 的异常，保持请求继续
+	}
+	return config;
+}, function(error){
+	return Promise.reject(error);
+});
 
 router.beforeEach(function(to,from,next){
 	let user = sessionStorage.getItem('user');

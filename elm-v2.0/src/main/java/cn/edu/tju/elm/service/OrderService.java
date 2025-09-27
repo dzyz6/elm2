@@ -4,8 +4,12 @@ import cn.edu.tju.core.model.HttpResult;
 import cn.edu.tju.core.model.ResultCodeEnum;
 import cn.edu.tju.core.model.User;
 import cn.edu.tju.core.security.service.UserService;
+import cn.edu.tju.elm.model.Business;
+import cn.edu.tju.elm.model.DeliveryAddress;
 import cn.edu.tju.elm.model.Food;
 import cn.edu.tju.elm.model.Order;
+import cn.edu.tju.elm.repository.AddressMapper;
+import cn.edu.tju.elm.repository.BusinessMapper;
 import cn.edu.tju.elm.repository.FoodMapper;
 import cn.edu.tju.elm.repository.OrderMapper;
 import jakarta.persistence.EntityNotFoundException;
@@ -27,6 +31,12 @@ public class OrderService {
     @Autowired
     OrderMapper orderMapper;
 
+    @Autowired
+    AddressMapper addressMapper;
+
+    @Autowired
+    BusinessMapper businessMapper;
+
     private final UserService userService;
 
     public OrderService(UserService userService) {
@@ -46,10 +56,15 @@ public class OrderService {
         // 获取当前用户（需确保用户已认证）
         User user = userService.getUserWithAuthorities()
                 .orElseThrow(() -> new RuntimeException("用户未登录"));
-
+        DeliveryAddress deliveryAddress=addressMapper.findById(order.getDeliveryAddress().getId()).orElseThrow();
+        Business business=businessMapper.findById(order.getBusiness().getId()).orElseThrow();
         // 设置订单默认值
-        order.setOrderTotal(BigDecimal.TEN);
         order.setCustomer(user);
+        if(order.getOrderTotal()==null){
+            order.setOrderTotal(BigDecimal.valueOf(10));
+        }
+        order.setBusiness(business);
+        order.setDeliveryAddress(deliveryAddress);
         order.setOrderDate(LocalDateTime.now());
         order.setOrderState(1); // 1-待处理
 
@@ -58,15 +73,14 @@ public class OrderService {
         return HttpResult.success(savedOrder);
     }
 
-    public HttpResult<Order> getOrderById(Long id) {
-        // 1. 获取当前认证用户（Spring Security自动管理）
-        User currentUser = getCurrentUser();
+    public HttpResult<List<Order>> getOrderById(Long id) {
+        return HttpResult.success(orderMapper.findByCustomer_Id(id));
+    }
 
-        // 精确查询订单
-        Order order = orderMapper.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("订单不存在"));
 
-        return HttpResult.success(order);
+    public HttpResult<Order> getOrderByOrderId(Long id) {
+        System.out.println("?????????????????????");
+        return HttpResult.success(orderMapper.findById(id).orElseThrow());
     }
 
     public HttpResult<List<Order>> listOrdersByUserId(Long userId) {

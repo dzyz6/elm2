@@ -13,7 +13,6 @@ import java.util.List;
 public interface OrderMapper extends JpaRepository<Order,Long> {
     // 根据用户ID查询订单（利用JPA方法命名规范）
     List<Order> findByCustomer_Id(Long customerId);
-
     // 可选：添加自定义查询方法（如按状态查询）
     @Query("SELECT o FROM Order o WHERE o.orderState = :status")
     List<Order> findByOrderState(@Param("status") Integer status);

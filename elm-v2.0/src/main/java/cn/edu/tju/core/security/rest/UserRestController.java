@@ -1,6 +1,7 @@
 package cn.edu.tju.core.security.rest;
 
 import cn.edu.tju.core.model.Authority;
+import cn.edu.tju.core.model.HttpResult;
 import cn.edu.tju.core.model.Person;
 import cn.edu.tju.core.security.SecurityUtils;
 import cn.edu.tju.core.security.UserModelDetailsService;
@@ -15,6 +16,9 @@ import cn.edu.tju.core.model.User;
 import cn.edu.tju.core.security.service.UserService;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
 
 @RestController
 @RequestMapping("/api")
@@ -50,12 +54,20 @@ public class UserRestController {
       return ResponseEntity.ok(user1);
    }
 
+
    @GetMapping("/user")
    @Operation(summary = "判断当前登录的用户", description = "判断当前登录的用户")
    public ResponseEntity<User> getActualUser() {
       return ResponseEntity.ok(userService.getUserWithAuthorities().get());
    }
 
+   @GetMapping("/autho")
+   public ResponseEntity<User> getAutho() {
+      return ResponseEntity.ok(userService.getUserWithAuthorities().get());
+   }
+
+
+   @CrossOrigin
    @PostMapping("/password")
    @Operation(summary = "修改密码", description = "已登录的用户只可以修改自己的密码，Admin可以修改任何人的密码")
    public ResponseEntity<String> updateUserPassword(@RequestBody LoginDto loginDto) {
@@ -95,5 +107,18 @@ public class UserRestController {
       person.setGender("string");
       person.setPhoto("string");
       return personRepository.save(person);
+   }
+
+   @PostMapping("/register")
+   public HttpResult<Person> register(@RequestBody Person person){
+      person.setPassword(SecurityUtils.BCryptPasswordEncode(person.getPassword()));
+      Authority userAuthority = new Authority();
+      userAuthority.setName("USER");
+      Set<Authority> authorities = new HashSet<>();
+      authorities.add(userAuthority);
+      person.setAuthorities(authorities);
+      person.setDeleted(false);
+      person.setActivated(true);
+      return HttpResult.success(personRepository.save(person));
    }
 }

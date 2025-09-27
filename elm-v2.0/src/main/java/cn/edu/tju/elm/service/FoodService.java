@@ -35,7 +35,8 @@ public class FoodService {
     }
 
     // 获取所有商品
-    public HttpResult<List<Food>> getAllFoods(Long businessId, Long orderId) {
+    public HttpResult<List<Food>> getAllFoods(Long businessId) {
+
         // 处理参数：如果两个参数都为空，返回所有食品
         List<Food> foods = null;
         if (businessId == null) {
@@ -117,13 +118,13 @@ public class FoodService {
      */
     private void validateBusinessOwnership(Long businessId, User user) {
         // 查询商家所有者
-        Business business = BusinessMapper.findById(businessId)
-                .orElseThrow(() -> new EntityNotFoundException("商家不存在"));
-
-        // 验证当前用户是否是商家所有者
-        if (!business.getBusinessOwner().getId().equals(user.getId())) {
-            throw new AccessDeniedException("无权修改他人商品");
-        }
+//        Business business = BusinessMapper.findById(businessId)
+//                .orElseThrow(() -> new EntityNotFoundException("商家不存在"));
+//
+//        // 验证当前用户是否是商家所有者
+//        if (!business.getBusinessOwner().getId().equals(user.getId())) {
+//            throw new AccessDeniedException("无权修改他人商品");
+//        }
     }
 //    @Transactional
 //    public void updateFood(Long id, FoodUpdateDTO dto) {

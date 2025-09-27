@@ -78,7 +78,9 @@ public class WebSecurityConfig {
             "/v3/api-docs/**",
             "/h2-console/**",
             "/**.jsp",
-            "/**.html"
+            "/**.html",
+            "/api/register",
+            "/api/businesses",
     };
     /**
      * 配置Spring Security安全链。

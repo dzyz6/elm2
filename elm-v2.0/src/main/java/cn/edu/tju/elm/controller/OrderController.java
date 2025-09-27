@@ -28,9 +28,15 @@ public class OrderController {
     }
 
     @GetMapping("/{id}")
-    public HttpResult<Order> getOrderById(@PathVariable Long id) throws Exception {
+    public HttpResult<List<Order>> getOrderById(@PathVariable Long id) throws Exception {
         return ordersService.getOrderById(id);
     }
+
+    @GetMapping("/get")
+        public HttpResult<Order> getOrderByOrderId(@RequestParam Long orderId) throws Exception {
+        return ordersService.getOrderByOrderId(orderId);
+    }
+
 
     @GetMapping
     public HttpResult<List<Order>> listOrdersByUserId(@RequestParam Long userId) throws Exception {

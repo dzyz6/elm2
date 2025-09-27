@@ -91,10 +91,12 @@
 					return;
 				}
 				this.deliveryAddress.userId = this.user.userId;
-				this.$axios.post('DeliveryAddressController/saveDeliveryAddress', this.$qs.stringify(
-					this.deliveryAddress
-				)).then(response => {
-					if(response.data>0){
+				this.$axios.post('api/addresses', {
+          "contactName": this.deliveryAddress.contactName,
+          "contactTel": this.deliveryAddress.contactTel,
+          "address": this.deliveryAddress.address,
+        }).then(response => {
+					if(response.data.success===true){
 						this.$router.push({path:'/userAddress',query:{businessId:this.businessId}});
 					}else{
 						alert('新增地址失败！');

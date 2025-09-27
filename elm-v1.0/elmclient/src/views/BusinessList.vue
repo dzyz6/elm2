@@ -8,14 +8,14 @@
 
 		<!-- 商家列表部分 -->
 		<ul class="business">
-			<li v-for="item in businessArr" @click="toBusinessInfo(item.businessId)">
+			<li v-for="item in businessArr" @click="toBusinessInfo(item.id)">
 				<div class="business-img">
 					<img :src="item.businessImg">
 					<div class="business-img-quantity" v-show="item.quantity>0">{{item.quantity}}</div>
 				</div>
 				<div class="business-info">
 					<h3>{{item.businessName}}</h3>
-					<p>&#165;{{item.starPrice}}起送 | &#165;{{item.deliveryPrice}}配送</p>
+					<p>&#165;{{item.startPrice}}起送 | &#165;{{item.deliveryPrice}}配送</p>
 					<p>{{item.businessExplain}}</p>
 				</div>
 			</li>
@@ -43,17 +43,18 @@
 			this.user = this.$getSessionStorage('user');
 			
 			//根据orderTypeId查询商家信息
-			this.$axios.post('BusinessController/listBusinessByOrderTypeId',this.$qs.stringify({
-				orderTypeId:this.orderTypeId
-			})).then(response=>{
-				this.businessArr = response.data;
-				//判断是否登录
-				if(this.user!=null){
-					this.listCart();
-				}
-			}).catch(error=>{
-				console.error(error);
-			});
+      this.$axios.get(`api/businesses`) // 路径参数拼接到 URL 中
+          .then(response => {
+            // 假设后端返回格式为 {code: 200, data: ...}，根据实际结构调整
+            this.businessArr = response.data.data;
+            // 判断是否登录
+            if (this.user !== null) {
+              this.listCart();
+            }
+          })
+          .catch(error => {
+            alert("加载数据失败，请重试");
+          });
 		},
 		components:{
 			Footer
@@ -68,7 +69,7 @@
 					for(let businessItem of this.businessArr){
 						businessItem.quantity = 0;
 						for(let cartItem of cartArr){
-							if(cartItem.businessId==businessItem.businessId){
+							if(cartItem.businessId==businessItem.id){
 								businessItem.quantity += cartItem.quantity;
 							}
 						}

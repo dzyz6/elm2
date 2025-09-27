@@ -38,8 +38,8 @@
 				<img src="../assets/wechat.png">
 			</li>
 		</ul>
-		<div class="payment-button">
-			<button>确认支付</button>
+		<div class="payment-button" >
+			<button @click="back">确认支付</button>
 		</div>
 
 		<!-- 底部菜单部分 -->
@@ -62,13 +62,20 @@
 			}
 		},
 		created() {
-			this.$axios.post('OrdersController/getOrdersById',this.$qs.stringify({
-				orderId:this.orderId
-			})).then(response=>{
-				this.orders = response.data;
-			}).catch(error=>{
-				console.error(error);
-			});
+       this.orders = this.orderId
+			// this.$axios.get('api/orders/get',
+      //     {
+      //       params: {
+      //         orderId: this.orderId // 参数名必须与后端@RequestParam("orderId")一致
+      //       }
+      // }
+			// ).then(response=>{
+      //   alert("asdfasdfasd")
+			// 	this.orders = response.data.data;
+			// }).catch(error=>{
+      //   alert(error)
+			// 	console.error(error);
+			// });
 		},
 		mounted() {
 			//这里的代码是实现：一旦路由到在线支付组件，就不能回到订单确认组件。
@@ -83,6 +90,9 @@
 			window.onpopstate = null;
 		},
 		methods:{
+      back(){
+        this.$router.push({path:'/'})
+      },
 			detailetShow(){
 				this.isShowDetailet = !this.isShowDetailet;
 			}

@@ -13,7 +13,6 @@
 				<p>{{deliveryaddress!=null?deliveryaddress.address:'请选择送货地址'}}</p>
 				<i class="fa fa-angle-right"></i>
 			</div>
-			<p>{{user.userName}}{{user.userSex | sexFilter}} {{user.userId}}</p>
 		</div>
 
 		<h3>{{business.businessName}}</h3>
@@ -46,7 +45,9 @@
 </template>
 
 <script>
-	export default{
+	import {setLocalStorage} from "@/common";
+
+  export default{
 		name:'Orders',
 		data(){
 			return {
@@ -60,23 +61,22 @@
 		created() {
 			this.user = this.$getSessionStorage('user');
 			this.deliveryaddress = this.$getLocalStorage(this.user.userId);
-			
 			//查询当前商家
-			this.$axios.post('BusinessController/getBusinessById',this.$qs.stringify({
-				businessId:this.businessId
-			})).then(response=>{
-				this.business = response.data;
+			this.$axios.get(`api/businesses/${this.businessId}`).then(response=>{
+				this.business = response.data.data;
 			}).catch(error=>{
 				console.error(error);
 			});
 			
 			//查询当前用户在购物车中的当前商家食品列表
-			this.$axios.post('CartController/listCart',this.$qs.stringify({
-				userId:this.user.userId,
-				businessId:this.businessId
-			})).then(response=>{
-				this.cartArr = response.data;
+			this.$axios.get('api/cartlist',{
+        params: {  // 使用params传递GET请求参数
+          businessId: this.businessId  // 直接传递businessId的值
+        }
+			}).then(response=>{
+				this.cartArr = response.data.data;
 			}).catch(error=>{
+
 				console.error(error);
 			});
 		},
@@ -106,15 +106,20 @@
 				}
 				
 				//创建订单
-				this.$axios.post('OrdersController/createOrders',this.$qs.stringify({
-					userId:this.user.userId,
-					businessId:this.businessId,
-					daId:this.deliveryaddress.daId,
-					orderTotal:this.totalPrice
-				})).then(response=>{
-					let orderId = response.data;
-					if(orderId>0){
-						this.$router.push({path:'/payment',query:{orderId:orderId}});
+				this.$axios.post('api/orders',{
+          "business":{
+            "id":this.businessId
+          },
+          "deliveryAddress":{
+            "id":1,
+          },
+          "orderTotal":this.totalPrice,
+				}).then(response=>{
+					let orderId = response.data.data;
+          alert(JSON.stringify(orderId))
+					if(orderId!=null){
+						this.$router.push({path:'/payment',query:{orderId:response.data.data}});
+
 					}else{
 						alert('创建订单失败！');
 					}

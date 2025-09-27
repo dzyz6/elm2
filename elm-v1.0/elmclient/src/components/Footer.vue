@@ -12,7 +12,7 @@
 			<i class="fa fa-file-text-o"></i>
 			<p>订单</p>
 		</li>
-		<li>
+		<li @click="toMyPage">
 			<i class="fa fa-user-o"></i>
 			<p>我的</p>
 		</li>
@@ -20,7 +20,9 @@
 </template>
 
 <script>
-	export default{
+	import {getSessionStorage} from "@/common";
+
+  export default{
 		name:'Footer',
 		methods:{
 			toIndex(){
@@ -28,7 +30,16 @@
 			},
 			toOrderList(){
 				this.$router.push({path:'/orderList'});
-			}
+			},
+      toMyPage(){
+        if(!getSessionStorage('auth')){
+          this.$router.push({path:'/myPage'});
+        }
+        else{
+          this.$router.push({path:'/putongPage'});
+        }
+
+      }
 		}
 	}
 </script>

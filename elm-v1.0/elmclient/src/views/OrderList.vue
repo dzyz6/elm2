@@ -77,11 +77,8 @@
 		},
 		created() {
 			this.user = this.$getSessionStorage('user');
-			
-			this.$axios.post('OrdersController/listOrdersByUserId',this.$qs.stringify({
-				userId:this.user.userId
-			})).then(response=>{
-				let result = response.data;
+			this.$axios.get(`api/orders/${this.user.id}`).then(response=>{
+				let result = response.data.data;
 				for(let orders of result){
 					orders.isShowDetailet = false;
 				}

@@ -108,10 +108,12 @@
 				}
 
 				//注册请求
-				this.$axios.post('UserController/saveUser', this.$qs.stringify(
-					this.user
-				)).then(response => {
-					if(response.data>0){
+				this.$axios.post('api/register', {
+          "username":this.user.userName,
+          "password":this.user.password,
+          "phone":this.user.userId,
+        }).then(response => {
+					if(response.data.success===true){
 						alert('注册成功！');
 						this.$router.go(-1);
 					}else{

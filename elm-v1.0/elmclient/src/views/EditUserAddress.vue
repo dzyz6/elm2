@@ -68,11 +68,12 @@
 		created() {
 			this.user = this.$getSessionStorage('user');
 			
-			this.$axios.post('DeliveryAddressController/getDeliveryAddressById', this.$qs.stringify({
-				daId:this.daId
-			})).then(response => {
+			this.$axios.post('api/getDeliveryAddressById', {
+				"id":this.daId
+			}).then(response => {
 				this.deliveryAddress = response.data;
 			}).catch(error => {
+        alert(error)
 				console.error(error);
 			});
 		},
@@ -94,10 +95,15 @@
 					return;
 				}
 
-				this.$axios.post('DeliveryAddressController/updateDeliveryAddress', this.$qs.stringify(
-					this.deliveryAddress
-				)).then(response => {
-					if (response.data > 0) {
+				this.$axios.post('api/addresses',
+            {
+              "id":this.daId,
+              "contactName": this.deliveryAddress.contactName,
+              "contactTel": this.deliveryAddress.contactTel,
+              "address": this.deliveryAddress.address
+            }
+				).then(response => {
+					if (response.data.success===true ) {
 						this.$router.push({
 							path: '/userAddress',
 							query: {

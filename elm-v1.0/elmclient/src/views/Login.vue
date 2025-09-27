@@ -10,10 +10,10 @@
 		<ul class="form-box">
 			<li>
 				<div class="title">
-					手机号码：
+					用户名称：
 				</div>
 				<div class="content">
-					<input type="text" v-model="userId" placeholder="手机号码">
+					<input type="text" v-model="username" placeholder="用户名称">
 				</div>
 			</li>
 			<li>
@@ -40,12 +40,13 @@
 
 <script>
 	import Footer from '../components/Footer.vue';
+  import {getLocalStorage, getSessionStorage} from "@/common";
 	
 	export default{
 		name:'Login',
 		data(){
 			return {
-				userId:'',
+				username:'',
 				password:''
 			}
 		},
@@ -61,18 +62,31 @@
 				}
 				
 				//登录请求
-				this.$axios.post('UserController/getUserByIdByPass',this.$qs.stringify({
-					userId:this.userId,
-					password:this.password
-				})).then(response=>{
-					let user = response.data;
+				this.$axios.post('api/auth',{
+					"username":this.username,
+          "password":this.password,
+				}).then(async(response)=>{
+          let user=response.data;
+
+
 					if(user==null){
 						alert('用户名或密码不正确！');
 					}else{
+						// 假设后端返回的数据结构包含 token 字段
+            let token=response.data;
+						if(user && token){
+							this.$setLocalStorage('token', token.id_token);
+						}
+            await this.$axios.get('api/user').then(response=>{
+              user = response.data;
+            });
 						//sessionstorage有容量限制，为了防止数据溢出，所以不将userImg数据放入session中
 						user.userImg = '';
 						this.$setSessionStorage('user',user);
 						this.$router.go(-1);
+            if(user.username=="admin"){
+              this.$setSessionStorage('auth',true);
+            }
 					}
 				}).catch(error=>{
 					console.error(error);
@@ -217,6 +231,6 @@
 	}
 
 	.wrapper .footer li i {
-		font-size: 5vw;
+		font-size: 6vw;
 	}
 </style>
