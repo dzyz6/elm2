@@ -16,6 +16,7 @@ import AddBusinessPage from "@/views/AddBusinessPage.vue";
 import AddBusiness from "@/views/AddBusiness.vue";
 import AddFood from "@/views/AddFood.vue";
 import PutongPage from "@/views/PutongPage.vue";
+import Wallet from "@/views/Wallet.vue";
 
 
 Vue.use(VueRouter)
@@ -29,6 +30,11 @@ const routes = [{
 		path: '/putongPage',
 		name: 'PutongPage',
 		component: PutongPage
+	},
+	{
+		path: '/wallet',
+		name: 'Wallet',
+		component: Wallet
 	},
 	{
 		path: '/index',

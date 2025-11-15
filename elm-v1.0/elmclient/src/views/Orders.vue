@@ -76,7 +76,6 @@
 			}).then(response=>{
 				this.cartArr = response.data.data;
 			}).catch(error=>{
-
 				console.error(error);
 			});
 		},

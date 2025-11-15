@@ -18,6 +18,23 @@
       <span class="box-content">{{ (user.phone) || '未绑定手机号' }}</span>
     </div>
 
+    <div class="function-box" >
+      <div class="money-box" @click="jumptowallet">
+        <p class="function-text">
+          钱包
+        </p>
+      </div>
+      <div class="space">
+
+      </div>
+      <div class="money-box" >
+        <p class="function-text">
+          更多功能
+        </p>
+      </div>
+    </div>
+
+
     <!-- 保留底部组件 -->
     <Footer class="page-footer" />
   </div>
@@ -42,6 +59,11 @@ export default {
       if (!userData) return {};
       return typeof userData === 'string' ? JSON.parse(userData) : userData;
     },
+
+    //跳转到钱包页面
+    jumptowallet(){
+      this.$router.push("/wallet");
+    },
     // 手机号脱敏格式化：138****5678 格式
     formatPhone(phone) {
       if (!phone || phone.length !== 11) return phone; // 非11位手机号不处理
@@ -65,7 +87,7 @@ export default {
   width: 100%;
   min-height: 100vh;
   background-color: #f5f7fa;
-  padding-top: 12vw; /* 头部空间 */
+  padding-top: 15vw; /* 头部空间 */
   padding-bottom: 15vw; /* 底部空间 */
   padding-left: 4vw;
   padding-right: 4vw;
@@ -92,12 +114,12 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 0 4vw;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 /* 通用信息框样式：两个框保持统一视觉风格 */
 .info-box {
+
   width: 100%;
   height: 15vw;
   background-color: #ffffff;
@@ -137,6 +159,34 @@ export default {
   z-index: 999;
 }
 
+.function-box{
+  align-items: center;
+
+  display: flex;
+}
+
+.money-box{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40vw;
+  width: 40vw;
+  background-color: #ffffff;
+  border-radius: 4vw;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+}
+
+.space{
+  width: 10vw;
+}
+
+.function-text{
+  font-size: 5vw;
+  color: #3c3c3c;
+  font-weight: bold;
+}
+
 /* 响应式适配（平板及以上屏幕） */
 @media (min-width: 768px) {
   .wrapper {
@@ -170,5 +220,7 @@ export default {
     font-size: 18px;
     max-width: 70%;
   }
+
+
 }
 </style>

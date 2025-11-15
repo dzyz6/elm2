@@ -81,6 +81,8 @@ public class WebSecurityConfig {
             "/**.html",
             "/api/register",
             "/api/businesses",
+            "/api/wallet/**",
+            "/api/transaction/**",
     };
     /**
      * 配置Spring Security安全链。
