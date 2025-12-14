@@ -83,6 +83,7 @@ public class WebSecurityConfig {
             "/api/businesses",
             "/api/wallet/**",
             "/api/transaction/**",
+            "/api/points/**",
     };
     /**
      * 配置Spring Security安全链。
