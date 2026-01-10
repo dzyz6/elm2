@@ -1,0 +1,165 @@
+一、需求部分
+1. 钱包模块：鼓励充值与防薅羊毛策略
+鼓励充值策略：
+
+奖励金额机制：系统通过rewardMoney字段实现充值奖励，当用户充值时可以获得额外奖励金额，该金额与充值本金分开管理
+VIP特权激励：VIP用户享受透支功能，可通过提升账户等级（VIP状态）来获取更高的透支额度
+灵活支付方式：支持先使用奖励金额再使用本金的支付策略，提升用户对奖励金额的感知和使用动力
+防薅羊毛措施：
+
+资金冻结机制：提供freezeMoney和freezeMoneyWithRewardPriority方法，确保资金在交易完成前处于冻结状态，防止提现
+交易类型区分：明确区分充值（TYPE_RECHARGE）、提现（TYPE_WITHDRAW）和支付（TYPE_PAYMENT）等交易类型，便于监控异常交易
+交易状态管理：交易状态（STATUS_PENDING、STATUS_COMPLETED）的设计可用于实现提现审核机制，增加恶意操作成本
+透支利息机制：对透支金额按日利率0.1%计算利息，防止滥用透支功能
+
+2. 钱包模块：透支功能设计
+设计实现：
+
+VIP专属功能：只有VIP用户（isVip=true）才能使用透支功能，通过overdraft方法实现
+额度管理：通过overdraftLimit和overdraftAmount字段分别管理透支额度和已透支金额
+利息计算：calculateInterest方法实现按日计息，日利率0.1%，从透支发生时间overdraftTime开始计算
+还款机制：提供repayOverdraft方法实现透支还款，支持部分或全额还款
+风险控制：
+
+透支金额上限控制（通过overdraftLimit）
+还款余额检查（确保用户有足够资金还款）
+透支状态追踪（通过overdraftTime和overdraftAmount）
+
+3. 积分模块：积分获取和使用规则
+积分获取规则：
+
+多渠道获取：支持通过订单（ORDER）、评论（COMMENT）、活动（ACTIVITY）等渠道获取积分
+灵活计算方式：支持固定积分（fixedPoints）和比例计算（ratio）两种积分获取方式
+规则驱动：通过PointsRule配置不同渠道的积分获取规则，支持启用/禁用状态控制
+积分使用规则：
+
+消费渠道：支持兑换（EXCHANGE）、订单抵扣（DEDUCTION）等消费方式
+优先使用策略：消费时优先使用快过期的积分（通过expireTime排序）
+明细记录：所有积分消费均生成明细记录，包含消费渠道、关联业务ID和描述信息
+
+4. 积分模块：积分有效期规则
+有效期管理：
+
+规则配置：通过PointsRule的validDays字段配置不同渠道积分的有效期
+过期时间计算：积分获取时根据validDays计算过期时间（expireTime）
+定期清理：提供processExpiredPoints方法定期处理过期积分，更新积分状态为EXPIRED
+用户体验保障：
+
+可用积分实时计算：每次查询积分账户时调用updateAvailablePoints方法更新可用积分
+过期提醒：通过积分明细的expireTime字段，系统可向用户发送积分即将过期提醒
+透明化展示：积分明细中清晰记录积分的过期时间和状态
+
+5. 其他特色需求
+账户自动创建：钱包和积分账户在首次使用时自动创建，提升用户体验
+多维度积分查询：支持查询总积分、可用积分和积分明细，满足不同场景需求
+交易流水记录：完整记录钱包充值、提现、支付等交易流水，便于审计和查询
+灵活的规则配置：积分规则支持按时间范围（startTime/endTime）生效，便于开展短期营销活动
+
+二、设计部分
+1. 钱包模块：充血模型体现
+设计特点：
+
+对象封装：Wallet类封装了钱包的所有属性（money、rewardMoney、overdraftLimit等）和行为（freezeMoney、overdraft、calculateInterest等）
+状态管理：对象内部维护自身状态，如余额、冻结金额、透支状态等
+行为驱动：通过方法调用改变对象状态，如recharge方法更新余额和奖励金额
+自验证：方法内部实现参数验证和业务规则检查，如freezeMoney检查余额是否充足
+高内聚：钱包相关的所有业务逻辑都集中在Wallet类中，减少外部依赖
+核心方法示例：
+
+freezeMoneyWithRewardPriority：实现先使用奖励金额再使用本金的冻结策略
+overdraft和repayOverdraft：实现透支和还款的完整业务逻辑
+calculateInterest：根据透支时间和金额计算利息
+
+2. 钱包模块：支付转账原子性保障
+设计实现：
+
+事务管理：服务层方法（如addPoints、consumePoints）使用@Transactional注解，确保数据库操作的原子性
+状态一致性：资金冻结（freezeMoney）和交易状态（STATUS_PENDING）的设计确保支付过程中的状态一致性
+错误处理：方法返回HttpResult对象，包含成功/失败状态和消息，便于上层处理异常情况
+幂等性考虑：交易记录的设计支持幂等性检查，防止重复支付
+
+3. 积分模块：与其他模块的关系和交互方式
+模块关系：
+
+与订单模块：订单完成后通过addPoints方法添加积分，订单支付时可通过consumePoints抵扣积分
+与用户模块：基于用户ID（userid）关联积分账户，支持VIP用户的特殊积分规则
+与营销模块：通过PointsRule配置不同营销活动的积分规则，支持活动期间的积分策略调整
+交互方式：
+
+同步调用：核心业务（如积分添加、消费）通过同步方法调用实现
+事件驱动：可扩展为事件驱动架构，如订单完成事件触发积分发放
+
+API接口：通过RESTful接口（如/api/points/addPoints）与其他模块交互
+4. 积分模块：灵活调整积分获取和使用规则
+设计实现：
+
+规则配置中心：PointsRule实体类作为积分规则的配置中心，包含规则名称、类型、渠道、比例、固定积分、有效期等字段
+规则管理接口：提供完整的CRUD接口管理积分规则（addPointsRule、updatePointsRule、getPointsRules等）
+规则生效条件：支持按时间范围（startTime/endTime）和启用状态（isEnabled）控制规则生效
+多规则支持：同一渠道可配置多个规则，系统自动选择有效的规则
+
+5. 积分模块：积分有效期管理与优先使用
+设计实现：
+
+有效期追踪：每条积分明细（PointsDetail）独立记录过期时间（expireTime）
+优先使用策略：消费积分时按过期时间升序排序（findAvailablePointsByUseridOrderByExpireTime），优先使用快过期的积分
+可用积分计算：updateAvailablePoints方法定期重新计算可用积分，确保数据准确性
+过期处理机制：processExpiredPoints方法定期将过期积分标记为EXPIRED状态
+用户体验优化：
+
+积分明细中清晰展示过期时间
+系统可主动提醒用户快过期的积分
+消费时自动优先使用快过期积分，无需用户手动选择
+
+6. 前后端接口规范
+规范实现：
+
+RESTful设计：使用HTTP方法（GET/POST）和资源路径清晰表达接口意图
+统一路径前缀：所有积分接口使用/api/points前缀，钱包接口使用/api/wallet前缀
+参数设计：合理使用@RequestParam和@RequestBody，明确必填和可选参数
+统一返回格式：所有接口返回HttpResult<T>结构，包含状态码、消息和数据
+文档注释：接口方法包含详细的Javadoc注释，说明参数、返回值和功能
+示例接口：
+
+积分获取：GET /api/points/getPoints?userid=123
+积分添加：POST /api/points/addPoints?userid=123&channel=ORDER&amount=100.0
+钱包查询：GET /api/wallet/getWallet?userid=123
+充值接口：POST /api/wallet/recharge?userid=123&amount=500.0
+
+7. 数据库设计中数据一致性保证
+设计实现：
+
+事务管理：核心业务方法使用@Transactional注解，确保数据库操作的原子性
+外键约束：各实体类通过ID字段建立关联，确保数据引用完整性
+状态同步：积分账户（Points）和积分明细（PointsDetail）的状态保持同步，如updateAvailablePoints方法
+并发控制：使用数据库乐观锁防止并发更新冲突
+数据校验：方法内部实现业务规则校验，如积分消费时检查可用积分是否充足
+关键保障点：
+
+积分添加时同时更新积分账户和创建积分明细
+积分消费时同时更新多个积分明细的状态和积分账户的可用积分
+钱包交易时确保资金流动的双向一致性
+
+8. 其他特色设计
+账户自动创建：钱包和积分账户在首次使用时自动创建，提升用户体验
+分层余额管理：将钱包余额分为充值本金（money）和奖励金额（rewardMoney），便于灵活的资金管理策略
+积分拆分机制：支持将一笔积分明细拆分为已使用和未使用两部分，实现精准的积分管理
+
+
+三、测试部分
+1. 单元测试
+测试重点：
+
+通过apifox测试
+
+潜在问题：
+
+检查接口的错误
+
+
+2. 集成测试
+测试重点：通过apifox测试
+
+潜在问题：
+
+积分或钱包的整个过程逻辑有问题

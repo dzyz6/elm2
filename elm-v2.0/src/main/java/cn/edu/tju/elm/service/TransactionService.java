@@ -8,10 +8,12 @@ import cn.edu.tju.elm.repository.TransactionMapper;
 import cn.edu.tju.elm.repository.WalletMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
 @Service
+@Transactional
 public class TransactionService {
 
     @Autowired
@@ -22,6 +24,8 @@ public class TransactionService {
 
     @Autowired
     WalletService walletService;
+    
+
 
     public HttpResult<List<Transaction>> getTransaction(Wallet wallet){
         return HttpResult.success(transactionMapper.findByFromwallet(wallet.getId()));
@@ -37,6 +41,10 @@ public class TransactionService {
         System.out.println("Description: " + transaction.getDescription());
         System.out.println("Transaction ID: " + transaction.getId());
         System.out.println("Transaction Status: " + transaction.getStatus());
+        
+        // 对于新交易，确保ID为null，避免Hibernate将其视为已存在的实体
+        transaction.setId(null);
+        System.out.println("Transaction ID after nullification: " + transaction.getId());
         
         try {
             HttpResult<Transaction> result = processTransaction(transaction);
@@ -92,10 +100,39 @@ public class TransactionService {
         if (wallet == null) {
             return HttpResult.failure("500", "目标钱包不存在");
         }
+        
+        // 初始化rewardMoney字段（如果为null）
+        if (wallet.getRewardMoney() == null) {
+            wallet.setRewardMoney(0.0);
+        }
+        
+        // 实现固定金额的充值奖励规则：充100送10，充200送20，以此类推
+        Double rewardAmount = 0.0;
+        if (transaction.getMoney() % 100 == 0 && transaction.getMoney() > 0) {
+            rewardAmount = transaction.getMoney() * 0.1; // 10%的奖励比例
+        }
+        
+        // 更新钱包余额：充值金额到money字段，奖励金额到rewardMoney字段
         wallet.setMoney(wallet.getMoney() + transaction.getMoney());
+        wallet.setRewardMoney(wallet.getRewardMoney() + rewardAmount);
         walletMapper.save(wallet);
+        
+        // 更新交易描述
+        if (rewardAmount > 0) {
+            transaction.setDescription(transaction.getDescription() + "，奖励金额：" + rewardAmount + "元");
+        }
+        
         transaction.setStatus(Transaction.STATUS_COMPLETED);
-        return HttpResult.success(transactionMapper.save(transaction));
+        
+        // 初始化version字段（如果为null）
+        if (transaction.getVersion() == null) {
+            transaction.setVersion(0);
+            System.out.println("=== TransactionService.handleRecharge: version field initialized to 0 ===");
+        }
+        
+        Transaction savedTransaction = transactionMapper.save(transaction);
+        
+        return HttpResult.success(savedTransaction);
     }
 
     private HttpResult<Transaction> handleWithdraw(Transaction transaction) {
@@ -103,12 +140,55 @@ public class TransactionService {
         if (wallet == null) {
             return HttpResult.failure("500", "源钱包不存在");
         }
-        if (wallet.getMoney() < transaction.getMoney()) {
-            return HttpResult.failure("500", "余额不足");
+        
+        // 初始化money和rewardMoney字段（如果为null）
+        if (wallet.getMoney() == null) {
+            wallet.setMoney(0.0);
         }
-        wallet.setMoney(wallet.getMoney() - transaction.getMoney());
+        if (wallet.getRewardMoney() == null) {
+            wallet.setRewardMoney(0.0);
+        }
+        
+        // 计算提现手续费（这里简单实现为1%，实际应根据规则配置）
+        Double feeRate = 0.01; // 1%手续费
+        Double feeAmount = transaction.getMoney() * feeRate;
+        
+        // 检查余额是否足够支付提现金额+手续费（只能使用充值本金，不能使用奖励金额）
+        Double totalAmount = transaction.getMoney() + feeAmount;
+        if (wallet.getMoney() < totalAmount) {
+            return HttpResult.failure("500", "余额不足，需支付手续费：" + feeAmount + "元");
+        }
+        
+        // 扣除提现金额和手续费（只能从充值本金中扣除，奖励金额不能用于提现）
+        wallet.setMoney(wallet.getMoney() - totalAmount);
         walletMapper.save(wallet);
+        
+        // 更新交易描述
+        transaction.setDescription(transaction.getDescription() + "，手续费：" + feeAmount + "元");
         transaction.setStatus(Transaction.STATUS_COMPLETED);
+        
+        // 初始化主要交易对象的version字段
+        if (transaction.getVersion() == null) {
+            transaction.setVersion(0);
+            System.out.println("=== TransactionService.handleWithdraw: version field initialized to 0 for main transaction ===");
+        }
+        
+        // 创建手续费交易记录
+        Transaction feeTransaction = new Transaction();
+        feeTransaction.setType(Transaction.TYPE_INTEREST);
+        feeTransaction.setFromwallet(transaction.getFromwallet());
+        feeTransaction.setTowallet(-1L); // 系统账户
+        feeTransaction.setMoney(feeAmount);
+        feeTransaction.setStatus(Transaction.STATUS_COMPLETED);
+        feeTransaction.setDescription("提现手续费");
+        
+        // 初始化手续费交易对象的version字段
+        if (feeTransaction.getVersion() == null) {
+            feeTransaction.setVersion(0);
+            System.out.println("=== TransactionService.handleWithdraw: version field initialized to 0 for fee transaction ===");
+        }
+        
+        transactionMapper.save(feeTransaction);
         return HttpResult.success(transactionMapper.save(transaction));
     }
 
@@ -120,27 +200,38 @@ public class TransactionService {
             return HttpResult.failure("500", "钱包不存在");
         }
         
-        // 检查余额（包括透支额度）
-        Double availableBalance = fromWallet.getMoney() + (fromWallet.getIsVip() ? fromWallet.getOverdraftLimit() - fromWallet.getOverdraftAmount() : 0);
-        if (availableBalance < transaction.getMoney()) {
+        // 检查可用余额
+        if (fromWallet.getAvailableBalance() < transaction.getMoney()) {
             return HttpResult.failure("500", "余额不足");
         }
         
         // 先冻结买家的资金
-        if (fromWallet.getMoney() >= transaction.getMoney()) {
-            fromWallet.setMoney(fromWallet.getMoney() - transaction.getMoney());
-            fromWallet.setFrozenMoney(fromWallet.getFrozenMoney() + transaction.getMoney());
-        } else {
-            // 使用透支
-            Double overdraftNeeded = transaction.getMoney() - fromWallet.getMoney();
-            fromWallet.setMoney(0.0);
-            fromWallet.setOverdraftAmount(fromWallet.getOverdraftAmount() + overdraftNeeded);
-            fromWallet.setOverdraftTime(java.time.LocalDateTime.now());
-            fromWallet.setFrozenMoney(fromWallet.getFrozenMoney() + transaction.getMoney());
+        Double remainingPayment = transaction.getMoney();
+        
+        // 首先尝试使用奖励金额和充值本金
+        if (remainingPayment > 0) {
+            // 使用freezeMoneyWithRewardPriority方法，先使用rewardMoney再使用money
+            if (fromWallet.freezeMoneyWithRewardPriority(remainingPayment)) {
+                remainingPayment = 0.0;
+            } else {
+                return HttpResult.failure("500", "冻结资金失败");
+            }
+        }
+        
+        // 最后使用透支额度（如果是VIP用户）
+        if (remainingPayment > 0 && fromWallet.getIsVip()) {
+            fromWallet.overdraft(remainingPayment);
         }
         
         walletMapper.save(fromWallet);
         transaction.setStatus(Transaction.STATUS_PENDING);
+        
+        // 初始化version字段（如果为null）
+        if (transaction.getVersion() == null) {
+            transaction.setVersion(0);
+            System.out.println("=== TransactionService.handlePayment: version field initialized to 0 ===");
+        }
+        
         return HttpResult.success(transactionMapper.save(transaction));
     }
 
@@ -158,40 +249,24 @@ public class TransactionService {
         System.out.println("钱包余额: " + wallet.getMoney());
         System.out.println("请求冻结金额: " + transaction.getMoney());
         
-        if (wallet.getMoney() < transaction.getMoney()) {
+        // 使用Wallet实体类的freezeMoney方法
+        if (!wallet.freezeMoney(transaction.getMoney())) {
             System.out.println("余额不足");
             return HttpResult.failure("500", "余额不足");
         }
-        System.out.println("???");
-        try {
-            // 处理null值
-            Double currentMoney = wallet.getMoney() != null ? wallet.getMoney() : 0.0;
-            Double currentFrozenMoney = wallet.getFrozenMoney() != null ? wallet.getFrozenMoney() : 0.0;
-            
-            System.out.println("当前money: " + currentMoney);
-            System.out.println("当前frozenMoney: " + currentFrozenMoney);
-            
-            Double newMoney = currentMoney - transaction.getMoney();
-            Double newFrozenMoney = currentFrozenMoney + transaction.getMoney();
-            
-            System.out.println("准备设置新money: " + newMoney);
-            wallet.setMoney(newMoney);
-            System.out.println("money设置成功");
-            
-            System.out.println("准备设置新frozenMoney: " + newFrozenMoney);
-            wallet.setFrozenMoney(newFrozenMoney);
-            System.out.println("frozenMoney设置成功");
-        } catch (Exception e) {
-            System.out.println("设置金额时发生异常: " + e.getMessage());
-            e.printStackTrace();
-            throw e;
-        }
-        System.out.println("???");
+        
         System.out.println("准备保存钱包...");
         Wallet savedWallet = walletMapper.save(wallet);
         System.out.println("钱包保存成功，ID: " + savedWallet.getId());
         
         transaction.setStatus(Transaction.STATUS_COMPLETED);
+        
+        // 初始化version字段（如果为null）
+        if (transaction.getVersion() == null) {
+            transaction.setVersion(0);
+            System.out.println("=== TransactionService.handleFreeze: version field initialized to 0 ===");
+        }
+        
         System.out.println("准备保存交易...");
         Transaction savedTransaction = transactionMapper.save(transaction);
         System.out.println("交易保存成功，ID: " + savedTransaction.getId());
@@ -206,18 +281,20 @@ public class TransactionService {
             return HttpResult.failure("500", "钱包不存在");
         }
         
-        // 处理null值
-        Double frozenMoney = wallet.getFrozenMoney() != null ? wallet.getFrozenMoney() : 0.0;
-        Double currentMoney = wallet.getMoney() != null ? wallet.getMoney() : 0.0;
-        
-        if (frozenMoney < transaction.getMoney()) {
+        // 使用Wallet实体类的unfreezeMoney方法
+        if (!wallet.unfreezeMoney(transaction.getMoney())) {
             return HttpResult.failure("500", "冻结金额不足");
         }
         
-        wallet.setFrozenMoney(frozenMoney - transaction.getMoney());
-        wallet.setMoney(currentMoney + transaction.getMoney());
         walletMapper.save(wallet);
         transaction.setStatus(Transaction.STATUS_COMPLETED);
+        
+        // 初始化version字段（如果为null）
+        if (transaction.getVersion() == null) {
+            transaction.setVersion(0);
+            System.out.println("=== TransactionService.handleUnfreeze: version field initialized to 0 ===");
+        }
+        
         return HttpResult.success(transactionMapper.save(transaction));
     }
 
@@ -229,25 +306,20 @@ public class TransactionService {
             return HttpResult.failure("500", "钱包不存在");
         }
         
-        if (!wallet.getIsVip()) {
-            return HttpResult.failure("500", "非VIP用户不能透支");
+        // 使用Wallet实体类的overdraft方法
+        if (!wallet.overdraft(transaction.getMoney())) {
+            return HttpResult.failure("500", "非VIP用户不能透支或透支额度不足");
         }
         
-        // 处理null值
-        Double overdraftLimit = wallet.getOverdraftLimit() != null ? wallet.getOverdraftLimit() : 0.0;
-        Double overdraftAmount = wallet.getOverdraftAmount() != null ? wallet.getOverdraftAmount() : 0.0;
-        Double currentMoney = wallet.getMoney() != null ? wallet.getMoney() : 0.0;
-        
-        Double availableOverdraft = overdraftLimit - overdraftAmount;
-        if (availableOverdraft < transaction.getMoney()) {
-            return HttpResult.failure("500", "透支额度不足");
-        }
-        
-        wallet.setMoney(currentMoney + transaction.getMoney());
-        wallet.setOverdraftAmount(overdraftAmount + transaction.getMoney());
-        wallet.setOverdraftTime(java.time.LocalDateTime.now());
         walletMapper.save(wallet);
         transaction.setStatus(Transaction.STATUS_COMPLETED);
+        
+        // 初始化version字段（如果为null）
+        if (transaction.getVersion() == null) {
+            transaction.setVersion(0);
+            System.out.println("=== TransactionService.handleOverdraft: version field initialized to 0 ===");
+        }
+        
         return HttpResult.success(transactionMapper.save(transaction));
     }
 
@@ -257,22 +329,20 @@ public class TransactionService {
             return HttpResult.failure("500", "钱包不存在");
         }
         
-        // 处理null值
-        Double currentMoney = wallet.getMoney() != null ? wallet.getMoney() : 0.0;
-        Double overdraftAmount = wallet.getOverdraftAmount() != null ? wallet.getOverdraftAmount() : 0.0;
-        
-        if (currentMoney < transaction.getMoney()) {
-            return HttpResult.failure("500", "余额不足");
+        // 使用Wallet实体类的repayOverdraft方法
+        if (!wallet.repayOverdraft(transaction.getMoney())) {
+            return HttpResult.failure("500", "余额不足或没有透支金额需要还款");
         }
         
-        Double repayAmount = Math.min(transaction.getMoney(), overdraftAmount);
-        wallet.setMoney(currentMoney - repayAmount);
-        wallet.setOverdraftAmount(overdraftAmount - repayAmount);
-        if (wallet.getOverdraftAmount() == 0) {
-            wallet.setOverdraftTime(null);
-        }
         walletMapper.save(wallet);
         transaction.setStatus(Transaction.STATUS_COMPLETED);
+        
+        // 初始化version字段（如果为null）
+        if (transaction.getVersion() == null) {
+            transaction.setVersion(0);
+            System.out.println("=== TransactionService.handleRepay: version field initialized to 0 ===");
+        }
+        
         return HttpResult.success(transactionMapper.save(transaction));
     }
 
@@ -292,6 +362,21 @@ public class TransactionService {
         wallet.setMoney(currentMoney - transaction.getMoney());
         walletMapper.save(wallet);
         transaction.setStatus(Transaction.STATUS_COMPLETED);
+        
+        // 初始化version字段（如果为null）
+        try {
+            java.lang.reflect.Field versionField = transaction.getClass().getDeclaredField("version");
+            versionField.setAccessible(true);
+            if (versionField.get(transaction) == null) {
+                versionField.set(transaction, 0);
+                System.out.println("=== TransactionService.handleInterest: version field initialized to 0 ===");
+            }
+        } catch (Exception e) {
+            System.out.println("=== TransactionService.handleInterest: Exception initializing version field ===");
+            System.out.println("Exception: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
         return HttpResult.success(transactionMapper.save(transaction));
     }
 
@@ -310,7 +395,7 @@ public class TransactionService {
         }
         
         // 解冻买家的冻结资金
-        fromWallet.setFrozenMoney(fromWallet.getFrozenMoney() - amount);
+        fromWallet.unfreezeMoney(amount);
         walletMapper.save(fromWallet);
         
         // 将资金转移到卖家的可用余额
@@ -323,6 +408,21 @@ public class TransactionService {
             if (pendingTx.getTowallet().equals(toWalletId) && pendingTx.getMoney().equals(amount)) {
                 pendingTx.setStatus(Transaction.STATUS_COMPLETED);
                 pendingTx.setDescription("订单确认，资金已转移给卖家");
+                
+                // 初始化version字段（如果为null）
+                try {
+                    java.lang.reflect.Field versionField = pendingTx.getClass().getDeclaredField("version");
+                    versionField.setAccessible(true);
+                    if (versionField.get(pendingTx) == null) {
+                        versionField.set(pendingTx, 0);
+                        System.out.println("=== TransactionService.confirmOrder: version field initialized to 0 for pending transaction ===");
+                    }
+                } catch (Exception e) {
+                    System.out.println("=== TransactionService.confirmOrder: Exception initializing version field for pending transaction ===");
+                    System.out.println("Exception: " + e.getMessage());
+                    e.printStackTrace();
+                }
+                
                 transactionMapper.save(pendingTx);
                 break;
             }
@@ -336,6 +436,20 @@ public class TransactionService {
         unfreezeTransaction.setType(Transaction.TYPE_UNFREEZE);
         unfreezeTransaction.setStatus(Transaction.STATUS_COMPLETED);
         unfreezeTransaction.setDescription("确认收货，资金从买家解冻并转移给卖家");
+        
+        // 初始化version字段（如果为null）
+        try {
+            java.lang.reflect.Field versionField = unfreezeTransaction.getClass().getDeclaredField("version");
+            versionField.setAccessible(true);
+            if (versionField.get(unfreezeTransaction) == null) {
+                versionField.set(unfreezeTransaction, 0);
+                System.out.println("=== TransactionService.confirmOrder: version field initialized to 0 for unfreeze transaction ===");
+            }
+        } catch (Exception e) {
+            System.out.println("=== TransactionService.confirmOrder: Exception initializing version field for unfreeze transaction ===");
+            System.out.println("Exception: " + e.getMessage());
+            e.printStackTrace();
+        }
         
         return HttpResult.success(transactionMapper.save(unfreezeTransaction));
     }
@@ -373,6 +487,20 @@ public class TransactionService {
         interestTransaction.setStatus(Transaction.STATUS_PENDING);
         interestTransaction.setDescription("透支利息：" + days + "天");
         
+        // 初始化version字段（如果为null）
+        try {
+            java.lang.reflect.Field versionField = interestTransaction.getClass().getDeclaredField("version");
+            versionField.setAccessible(true);
+            if (versionField.get(interestTransaction) == null) {
+                versionField.set(interestTransaction, 0);
+                System.out.println("=== TransactionService.calculateOverdraftInterest: version field initialized to 0 for interest transaction ===");
+            }
+        } catch (Exception e) {
+            System.out.println("=== TransactionService.calculateOverdraftInterest: Exception initializing version field for interest transaction ===");
+            System.out.println("Exception: " + e.getMessage());
+            e.printStackTrace();
+        }
+        
         return HttpResult.success(transactionMapper.save(interestTransaction));
     }
 
@@ -388,6 +516,13 @@ public class TransactionService {
             return HttpResult.failure("500", "交易不存在");
         }
         transaction.setStatus(status);
+        
+        // 初始化version字段（如果为null）
+        if (transaction.getVersion() == null) {
+            transaction.setVersion(0);
+            System.out.println("=== TransactionService.updateTransaction: version field initialized to 0 ===");
+        }
+        
         return HttpResult.success(transactionMapper.save(transaction));
     }
 

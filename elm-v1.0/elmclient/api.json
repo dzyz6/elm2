@@ -1,0 +1,1717 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ELM餐饮管理系统 - 完整API文档",
+    "description": "ELM餐饮管理系统的完整API接口文档，包含积分模块、交易模块和钱包模块的所有接口",
+    "version": "1.0.0",
+    "contact": {
+      "name": "ELM开发团队",
+      "email": "dev@elm.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "本地开发环境"
+    }
+  ],
+  "paths": {
+
+    "/api/points/getPoints": {
+      "get": {
+        "summary": "获取积分账户",
+        "description": "根据用户ID获取积分账户信息",
+        "tags": ["积分账户管理"],
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取积分账户信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultPoints"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "获取积分账户信息失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/points/addPoints": {
+      "post": {
+        "summary": "添加积分",
+        "description": "根据规则为用户添加积分",
+        "tags": ["积分交易"],
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "积分来源渠道（ORDER、COMMENT、ACTIVITY等）"
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "description": "金额或数量（用于计算积分）"
+          },
+          {
+            "name": "relatedId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "关联业务ID（可选）"
+          },
+          {
+            "name": "description",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "积分描述（可选）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "积分添加成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultPoints"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "积分添加失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/points/consumePoints": {
+      "post": {
+        "summary": "消费积分",
+        "description": "消费用户积分（优先使用快过期的积分）",
+        "tags": ["积分交易"],
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          },
+          {
+            "name": "pointsAmount",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            },
+            "description": "要消费的积分数量"
+          },
+          {
+            "name": "channel",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "消费渠道（EXCHANGE、DEDUCTION等）"
+          },
+          {
+            "name": "relatedId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "关联业务ID（可选）"
+          },
+          {
+            "name": "description",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "消费描述（可选）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "积分消费成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultPoints"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "积分消费失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/points/getPointsDetails": {
+      "get": {
+        "summary": "查询积分明细",
+        "description": "获取用户的所有积分明细记录",
+        "tags": ["积分查询"],
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取积分明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultPointsDetailList"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "获取积分明细失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/points/getAvailablePointsDetails": {
+      "get": {
+        "summary": "查询可用积分明细",
+        "description": "获取用户的可用积分明细记录",
+        "tags": ["积分查询"],
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取可用积分明细",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultPointsDetailList"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "获取可用积分明细失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/points/processExpiredPoints": {
+      "post": {
+        "summary": "处理过期积分",
+        "description": "处理所有用户的过期积分（定时任务调用）",
+        "tags": ["积分管理"],
+        "responses": {
+          "200": {
+            "description": "成功处理过期积分",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultInteger"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "处理过期积分失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/points/addPointsRule": {
+      "post": {
+        "summary": "创建积分规则",
+        "description": "创建新的积分规则",
+        "tags": ["积分规则管理"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PointsRule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "积分规则创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultPointsRule"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "积分规则创建失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/points/updatePointsRule": {
+      "post": {
+        "summary": "更新积分规则",
+        "description": "更新现有的积分规则",
+        "tags": ["积分规则管理"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PointsRule"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "积分规则更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultPointsRule"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "积分规则更新失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/points/getPointsRules": {
+      "get": {
+        "summary": "查询积分规则",
+        "description": "查询积分规则列表，可根据渠道和规则类型过滤",
+        "tags": ["积分规则管理"],
+        "parameters": [
+          {
+            "name": "channel",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "积分渠道（可选）"
+          },
+          {
+            "name": "ruleType",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "规则类型（可选，EARN或CONSUME）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取积分规则列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultPointsRuleList"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "获取积分规则列表失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/points/getPointsRuleById": {
+      "get": {
+        "summary": "根据ID查询积分规则",
+        "description": "根据规则ID获取积分规则详情",
+        "tags": ["积分规则管理"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "积分规则ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取积分规则详情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultPointsRule"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "获取积分规则详情失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/points/deletePointsRule": {
+      "post": {
+        "summary": "删除积分规则",
+        "description": "根据规则ID删除积分规则",
+        "tags": ["积分规则管理"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "积分规则ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "积分规则删除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultVoid"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "积分规则删除失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+
+    "/api/transaction/addTransaction": {
+      "post": {
+        "summary": "添加交易",
+        "description": "创建新的交易记录，支持多种交易类型",
+        "tags": ["交易管理"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Transaction"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "交易创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultTransaction"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "交易创建失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transaction/getTransaction": {
+      "post": {
+        "summary": "获取用户交易列表",
+        "description": "根据用户ID获取该用户的所有交易记录",
+        "tags": ["交易查询"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userid": {
+                    "type": "integer",
+                    "format": "int64"
+                  }
+                },
+                "required": ["userid"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功获取用户交易列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultTransactionList"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "获取用户交易列表失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transaction/confirmOrder": {
+      "post": {
+        "summary": "确认订单并转移资金",
+        "description": "确认订单，将买家冻结资金转移到卖家账户",
+        "tags": ["订单资金处理"],
+        "parameters": [
+          {
+            "name": "orderId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "订单ID"
+          },
+          {
+            "name": "buyerId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "买家用户ID"
+          },
+          {
+            "name": "sellerId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "卖家用户ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "订单确认成功，资金已转移",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultTransaction"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "订单确认失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transaction/confirmReceive": {
+      "post": {
+        "summary": "确认收货",
+        "description": "确认收货，将买家冻结资金转移到卖家账户（简化版本）",
+        "tags": ["订单资金处理"],
+        "parameters": [
+          {
+            "name": "fromWalletId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "买家钱包ID"
+          },
+          {
+            "name": "toWalletId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "卖家钱包ID"
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "description": "交易金额"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "收货确认成功，资金已转移",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultTransaction"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "收货确认失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transaction/calculateInterest": {
+      "post": {
+        "summary": "计算透支利息",
+        "description": "计算并收取指定钱包的透支利息",
+        "tags": ["钱包管理"],
+        "parameters": [
+          {
+            "name": "walletId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "钱包ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "利息计算成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultTransaction"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "利息计算失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transaction/pendingTransactions": {
+      "get": {
+        "summary": "获取待处理交易",
+        "description": "获取指定钱包的所有待处理交易记录",
+        "tags": ["交易查询"],
+        "parameters": [
+          {
+            "name": "walletId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "钱包ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取待处理交易列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultTransactionList"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "获取待处理交易列表失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/transaction/updateTransaction": {
+      "post": {
+        "summary": "更新交易状态",
+        "description": "根据交易ID更新交易状态",
+        "tags": ["交易管理"],
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "交易ID"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "enum": [0, 1, 2, 3],
+              "description": "交易状态：0-待处理, 1-已完成, 2-失败, 3-已取消"
+            },
+            "description": "交易状态"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "交易状态更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultTransaction"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "交易状态更新失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+
+
+    "/api/wallet/addWallet": {
+      "post": {
+        "summary": "创建钱包",
+        "description": "为用户创建新的钱包账户",
+        "tags": ["钱包管理"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WalletCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "钱包创建成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultWallet"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "钱包创建失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wallet/setWallet": {
+      "post": {
+        "summary": "更新钱包信息",
+        "description": "更新用户钱包的详细信息",
+        "tags": ["钱包管理"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Wallet"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "钱包信息更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultWallet"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "钱包信息更新失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wallet/getWallet": {
+      "get": {
+        "summary": "获取钱包信息",
+        "description": "根据用户ID获取钱包信息，如果用户没有钱包则自动创建",
+        "tags": ["钱包查询"],
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功获取钱包信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultWallet"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "获取钱包信息失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wallet/freezeMoney": {
+      "post": {
+        "summary": "冻结资金",
+        "description": "冻结用户钱包中的指定金额",
+        "tags": ["资金操作"],
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "description": "冻结金额"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "资金冻结成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultWallet"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "资金冻结失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wallet/unfreezeMoney": {
+      "post": {
+        "summary": "解冻资金",
+        "description": "解冻用户钱包中的指定冻结金额",
+        "tags": ["资金操作"],
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "description": "解冻金额"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "资金解冻成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultWallet"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "资金解冻失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wallet/setVipStatus": {
+      "post": {
+        "summary": "设置VIP状态和透支额度",
+        "description": "设置用户的VIP状态和对应的透支额度",
+        "tags": ["VIP管理"],
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          },
+          {
+            "name": "isVip",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "boolean"
+            },
+            "description": "是否为VIP"
+          },
+          {
+            "name": "overdraftLimit",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "description": "透支额度"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "VIP状态设置成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultWallet"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "VIP状态设置失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wallet/overdraft": {
+      "post": {
+        "summary": "透支",
+        "description": "用户进行透支操作",
+        "tags": ["资金操作"],
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "description": "透支金额"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "透支操作成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultWallet"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "透支操作失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wallet/repayOverdraft": {
+      "post": {
+        "summary": "偿还透支",
+        "description": "用户偿还透支金额",
+        "tags": ["资金操作"],
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          },
+          {
+            "name": "amount",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "number",
+              "format": "double"
+            },
+            "description": "偿还金额"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "透支偿还成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultWallet"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "透支偿还失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wallet/calculateInterest": {
+      "get": {
+        "summary": "计算利息",
+        "description": "计算用户钱包的透支利息",
+        "tags": ["利息计算"],
+        "parameters": [
+          {
+            "name": "userid",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "用户ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "利息计算成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResultDouble"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "利息计算失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+  },
+  "components": {
+    "schemas": {
+      "HttpResult": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          }
+        }
+      },
+      "HttpResultPoints": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Points"
+          }
+        }
+      },
+      "HttpResultPointsDetailList": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PointsDetail"
+            }
+          }
+        }
+      },
+      "HttpResultInteger": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "data": {
+            "type": "integer"
+          }
+        }
+      },
+      "HttpResultPointsRule": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/PointsRule"
+          }
+        }
+      },
+      "HttpResultPointsRuleList": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PointsRule"
+            }
+          }
+        }
+      },
+      "HttpResultVoid": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          }
+        }
+      },
+      "Points": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "userid": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "totalPoints": {
+            "type": "integer"
+          },
+          "availablePoints": {
+            "type": "integer"
+          },
+          "expiredPoints": {
+            "type": "integer"
+          },
+          "consumedPoints": {
+            "type": "integer"
+          }
+        }
+      },
+      "PointsDetail": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "userid": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "points": {
+            "type": "integer"
+          },
+          "type": {
+            "type": "string",
+            "description": "积分类型：EARN（获得）、CONSUME（消费）、EXPIRE（过期）"
+          },
+          "channel": {
+            "type": "string",
+            "description": "积分渠道：ORDER、COMMENT、ACTIVITY、EXCHANGE、DEDUCTION等"
+          },
+          "relatedId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "关联业务ID"
+          },
+          "description": {
+            "type": "string"
+          },
+          "expireDate": {
+            "type": "string",
+            "format": "date-time",
+            "description": "积分过期日期"
+          },
+          "createDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "PointsRule": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "channel": {
+            "type": "string",
+            "description": "积分渠道：ORDER、COMMENT、ACTIVITY、EXCHANGE、DEDUCTION等"
+          },
+          "ruleType": {
+            "type": "string",
+            "description": "规则类型：EARN（获得）、CONSUME（消费）"
+          },
+          "pointsRatio": {
+            "type": "number",
+            "format": "double",
+            "description": "积分比例（如100元=1积分，则比例为0.01）"
+          },
+          "minAmount": {
+            "type": "number",
+            "format": "double",
+            "description": "最小金额（仅EARN类型有效）"
+          },
+          "maxPoints": {
+            "type": "integer",
+            "description": "最大积分（仅EARN类型有效）"
+          },
+          "expireDays": {
+            "type": "integer",
+            "description": "积分有效期（天）"
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "是否激活"
+          },
+          "createDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updateDate": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "HttpResultTransaction": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Transaction"
+          }
+        }
+      },
+      "HttpResultTransactionList": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Transaction"
+            }
+          }
+        }
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "交易ID（创建时不需要）"
+          },
+          "money": {
+            "type": "number",
+            "format": "double",
+            "description": "交易金额"
+          },
+          "type": {
+            "type": "integer",
+            "enum": [0, 1, 2, 3, 4, 5, 6, 7, 8],
+            "description": "交易类型：0-充值, 1-提现, 2-支付, 3-冻结, 4-解冻, 5-透支, 6-还款, 7-利息, 8-其他"
+          },
+          "fromwallet": {
+            "type": "integer",
+            "format": "int64",
+            "description": "付款方钱包ID（充值等无付款方的交易可以为null）"
+          },
+          "towallet": {
+            "type": "integer",
+            "format": "int64",
+            "description": "收款方钱包ID（提现等无收款方的交易可以为null）"
+          },
+          "status": {
+            "type": "integer",
+            "enum": [0, 1, 2, 3],
+            "description": "交易状态：0-待处理, 1-已完成, 2-失败, 3-已取消（创建时可选，默认待处理）"
+          },
+          "orderId": {
+            "type": "integer",
+            "format": "int64",
+            "description": "关联的订单ID（可选）"
+          },
+          "description": {
+            "type": "string",
+            "description": "交易描述（可选）"
+          }
+        },
+        "required": ["money", "type"]
+      },
+      "HttpResultWallet": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Wallet"
+          }
+        }
+      },
+      "HttpResultDouble": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "data": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "Wallet": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64",
+            "description": "钱包ID"
+          },
+          "userid": {
+            "type": "integer",
+            "format": "int64",
+            "description": "用户ID"
+          },
+          "money": {
+            "type": "number",
+            "format": "double",
+            "description": "可用余额"
+          },
+          "frozenMoney": {
+            "type": "number",
+            "format": "double",
+            "description": "冻结金额"
+          },
+          "overdraftLimit": {
+            "type": "number",
+            "format": "double",
+            "description": "透支额度"
+          },
+          "overdraftAmount": {
+            "type": "number",
+            "format": "double",
+            "description": "当前透支金额"
+          },
+          "overdraftTime": {
+            "type": "string",
+            "format": "date-time",
+            "description": "透支时间"
+          },
+          "isVip": {
+            "type": "boolean",
+            "description": "是否为VIP"
+          }
+        }
+      },
+      "WalletCreate": {
+        "type": "object",
+        "properties": {
+          "userid": {
+            "type": "integer",
+            "format": "int64",
+            "description": "用户ID",
+            "required": true
+          }
+        }
+      }
+    }
+  }
+}
